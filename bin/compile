@@ -52,6 +52,9 @@ fi
 
 cd $BUILD_DIR
 
+mkdir -p mods/foo~bar~1
+find . -d 1 ! -name "\.jdk7" ! -name "\$VERTX_DIR" ! -name "mods" -exec mv {} mods/foo~bar~1/ \;
+
 export JAVA_HOME="$BUILD_DIR/.jdk7"
 export VERTX_HOME="$BUILD_DIR/$VERTX_DIR"
 export PATH=$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
@@ -70,5 +73,5 @@ fi
 # Warn if no Procfile is present
 if [ ! -f Procfile ]; then
   echo "-----> No Procfile found. Will use the following default process: "
-  echo "       vertx run server.groovy"
+  echo "       vertx runmod foo~bar~1"
 fi
