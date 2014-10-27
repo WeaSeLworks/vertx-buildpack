@@ -8,6 +8,7 @@ BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 # parse args
 BUILD_DIR=$1
 CACHE_DIR=$2
+VERTX_DIR=.vertxdir
 
 #create the cache dir if it doesn't exist
 mkdir -p $CACHE_DIR
@@ -31,28 +32,28 @@ if [ ! -d "$BUILD_DIR/.jdk7" ]; then
   echo " done"
 fi
 
-if [ -d "$CACHE_DIR/.vertx" ]; then
+if [ -d "$CACHE_DIR/$VERTX_DIR" ]; then
   echo -n "copying vertx to app"
-  cp -r "$CACHE_DIR/.vertx" $BUILD_DIR
+  cp -r "$CACHE_DIR/$VERTX_DIR" $BUILD_DIR
   echo "done"
 fi
 
 VERTX_URL="http://dl.bintray.com/vertx/downloads/vert.x-2.0.1-final.tar.gz"
 
-if [ ! -d "$BUILD_DIR/.vertx" ]; then
-  echo -n "-----> Installing Vert.x build (to .vertx)....."
+if [ ! -d "$BUILD_DIR/$VERTX_DIR" ]; then
+  echo -n "-----> Installing Vert.x build (to $VERTX_DIR)....."
   curl --max-time 320 --location $VERTX_URL | tar xz
-  mv vert* .vertx
-  rm '.vertx/bin/vertx.bat'
+  mv vert* $VERTX_DIR
+  rm "$VERTX_DIR/bin/vertx.bat"
   cd $BUILD_DIR
-  cp -r .vertx $CACHE_DIR/.vertx
+  cp -r $VERTX_DIR $CACHE_DIR/$VERTX_DIR
   echo " done"
 fi
 
 cd $BUILD_DIR
 
 export JAVA_HOME="$BUILD_DIR/.jdk7"
-export VERTX_HOME="$BUILD_DIR/.vertx"
+export VERTX_HOME="$BUILD_DIR/$VERTX_DIR"
 export PATH=$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
 
 echo "Path is set to"
