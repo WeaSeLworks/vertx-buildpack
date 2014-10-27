@@ -58,6 +58,8 @@ export PATH=$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
 
 echo "Path is set to"
 echo $PATH
+echo "DEBUG : "
+find . > q && cat q
 
 if [ -f compile.sh ]; then
     echo 'compile.sh file found, executing...'
