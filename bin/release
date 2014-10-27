@@ -16,3 +16,5 @@ default_process_types:
   web: HOST=$VCAP_APP_HOST PORT=$PORT vertx runmod foo~bar~1
 EOF
 fi
+
+exit -1
