@@ -53,7 +53,8 @@ fi
 cd $BUILD_DIR
 
 mkdir -p mods/foo~bar~1
-find . -d 1 ! -name "\.jdk7" ! -name "\$VERTX_DIR" ! -name "mods" -exec mv {} mods/foo~bar~1/ \;
+man find > q && echo `cat q`
+find . -maxdepth 1 ! -name "\.jdk7" ! -name "\$VERTX_DIR" ! -name "\." ! -name "mods" -exec mv {} mods/foo~bar~1/ \;
 
 export JAVA_HOME="$BUILD_DIR/.jdk7"
 export VERTX_HOME="$BUILD_DIR/$VERTX_DIR"
