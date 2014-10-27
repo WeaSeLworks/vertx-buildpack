@@ -54,7 +54,7 @@ cd $BUILD_DIR
 
 mkdir -p mods/foo~bar~1
 man find > q && echo `cat q`
-find . -maxdepth 1 ! -name "\.jdk7" ! -name "\$VERTX_DIR" ! -name "\." ! -name "mods" -exec mv {} mods/foo~bar~1/ \;
+find . -maxdepth 1 ! -name "\.jdk7" ! -name "Procfile" ! -name "\$VERTX_DIR" ! -name "\." ! -name "mods" -exec mv {} mods/foo~bar~1/ \;
 
 echo "PORT = $PORT"
 echo "HOST = $VCAP_APP_HOST"
