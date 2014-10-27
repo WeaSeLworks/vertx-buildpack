@@ -17,4 +17,3 @@ default_process_types:
 EOF
 fi
 
-exit -1
