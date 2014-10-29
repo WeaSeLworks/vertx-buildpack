@@ -80,6 +80,11 @@ echo $PATH
 echo "DEBUG : "
 find . -maxdepth 4 > q && echo `cat q`
 
+echo "env var = $ENV_DIR"
+echo `ll $ENV_DIR`
+echo "3rd param $3"
+
+
 if [ -f compile.sh ]; then
     echo 'compile.sh file found, executing...'
     chmod 700 compile.sh
