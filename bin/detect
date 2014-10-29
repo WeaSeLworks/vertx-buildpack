@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # bin/use <build-dir>
 
-if [ -f $1/mod.json ]; then
-   echo "Vert.x" && exit 0
-else
-  echo "no" && exit 1
-fi
+#if [ -f $1/mod.json ]; then
+#   echo "Vert.x" && exit 0
+#else
+#  echo "no" && exit 1
+#fi
+
+echo "Vert.x" && exit 0
