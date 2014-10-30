@@ -79,20 +79,11 @@ echo "Path is set to"
 echo $PATH
 echo "DEBUG : "
 find . -maxdepth 4 > q && echo `cat q`
+echo "VCAP = $VCAP_APPLICATION"
 
-echo "env var = $ENV_DIR"
-echo `ll $ENV_DIR`
-echo "3rd param $3"
-
-
-if [ -f compile.sh ]; then
-    echo 'compile.sh file found, executing...'
-    chmod 700 compile.sh
-    ./compile.sh
-fi
 
 # Warn if no Procfile is present
 if [ ! -f Procfile ]; then
   echo "-----> No Procfile found. Will use the following default process: "
-  echo "       HOST=$VCAP_APP_HOST PORT=$PORT vertx runmod foo~bar~1"
+  echo "       vertx runmod foo~bar~1"
 fi
