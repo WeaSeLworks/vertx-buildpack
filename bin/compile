@@ -20,6 +20,19 @@ if [ -d "$CACHE_DIR/.jdk7" ]; then
   echo "done"
 fi
 
+GROOVY_URL="http://dl.bintray.com/groovy/maven/groovy-binary-2.3.7.zip"
+
+if [ ! -d "$CACHE_DIR/.groovy" ]; then
+  echo -n "-----> Installing Groovy shell (to .groovy)....."
+  mkdir "$BUILD_DIR/.groovy"
+  cd "$BUILD_DIR/.groovy"
+  curl --max-time 180 --location $GROOVY_URL > groovybin.zip
+  unzip groovybin.zip
+  export GROOVY_HOME=$BUILD_DIR/.groovy/groovy-2.3.7
+  echo " done"
+fi
+
+
 OPENJDK7_URL="https://s3.amazonaws.com/heroku-jvm-langpack-java/openjdk7-u2-heroku-temaki.tar.gz"
 
 if [ ! -d "$BUILD_DIR/.jdk7" ]; then
@@ -51,16 +64,19 @@ if [ ! -d "$BUILD_DIR/$VERTX_DIR" ]; then
   echo " done"
 fi
 
+export PATH=$GROOVY_HOME/bin:$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
+
+
+
 cd $BUILD_DIR
 
 mkdir -p mods/foo~bar~1
 
+#mv app files into a mods/<package>~<appname>~1 dir. 
+#This is the trick that makes the vertx runmod cmd work.
 find . -maxdepth 1 ! -name "\.jdk7" ! -name "Procfile" ! -name "\.vertxdir" ! -name "\." ! -name "mods" -exec mv {} mods/foo~bar~1/ \;
 
-echo "PORT = $PORT"
-echo "HOST = $VCAP_APP_HOST"
 
-export PATH=$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
 
 mkdir -p ${BUILD_DIR}/.profile.d
 echo "export JAVA_HOME=\"\$HOME/.jdk7\"" > ${BUILD_DIR}/.profile.d/javahome.sh
@@ -80,6 +96,7 @@ echo $PATH
 echo "DEBUG : "
 find . -maxdepth 4 > q && echo `cat q`
 echo "VCAP = $VCAP_APPLICATION"
+echo `groovy $BIN_DIR/vcap.groovy application_name`
 
 
 # Warn if no Procfile is present
