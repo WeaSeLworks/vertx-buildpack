@@ -8,47 +8,51 @@ BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 # parse args
 BUILD_DIR=$1
 CACHE_DIR=$2
+
+#
 VERTX_DIR=.vertxdir
+JDK_DIR=.jdk
+GROOVY_DIR=.groovy
 
 #create the cache dir if it doesn't exist
 mkdir -p $CACHE_DIR
 
-cd $BUILD_DIR
-if [ -d "$CACHE_DIR/.jdk7" ]; then
-  echo -n "copying jdk to app"
-  cp -r "$CACHE_DIR/.jdk7" $BUILD_DIR
-  echo "done"
-fi
-
 GROOVY_URL="http://dl.bintray.com/groovy/maven/groovy-binary-2.3.7.zip"
 
-if [ ! -d "$CACHE_DIR/.groovy" ]; then
-  echo -n "-----> Installing Groovy shell (to .groovy)....."
-  mkdir "$BUILD_DIR/.groovy"
-  cd "$BUILD_DIR/.groovy"
+if [ ! -d "$CACHE_DIR/$GROOVY_DIR" ]; then
+  echo -n "-----> Installing Groovy shell for json slurping (to $GROOVY_DIR)....."
+  mkdir "$BUILD_DIR/$GROOVY_DIR"
+  cd "$BUILD_DIR/$GROOVY_DIR"
   curl --max-time 180 --location $GROOVY_URL > groovybin.zip
   unzip groovybin.zip
-  export GROOVY_HOME=$BUILD_DIR/.groovy/groovy-2.3.7
-  echo " done"
+  export GROOVY_HOME=$BUILD_DIR/$GROOVY_DIR/groovy-2.3.7
+  echo " done."
 fi
 
+cd $BUILD_DIR
+if [ -d "$CACHE_DIR/$JDK_DIR" ]; then
+  echo -n "copying jdk to app....."
+  cp -r "$CACHE_DIR/$JDK_DIR" $BUILD_DIR
+  echo " done."
+fi
 
+#TODO upgrade this to JDK8
 OPENJDK7_URL="https://s3.amazonaws.com/heroku-jvm-langpack-java/openjdk7-u2-heroku-temaki.tar.gz"
 
-if [ ! -d "$BUILD_DIR/.jdk7" ]; then
-  echo -n "-----> Installing OpenJDK7u2 build (to .jdk7)....."
-  mkdir "$BUILD_DIR/.jdk7"
-  cd "$BUILD_DIR/.jdk7"
+if [ ! -d "$BUILD_DIR/$JDK_DIR" ]; then
+  echo -n "-----> Installing OpenJDK7u2 build (to $JDK_DIR)....."
+  mkdir "$BUILD_DIR/$JDK_DIR"
+  cd "$BUILD_DIR/$JDK_DIR"
   curl --max-time 180 --location $OPENJDK7_URL | tar xz
   cd $BUILD_DIR
-  cp -r .jdk7 $CACHE_DIR/.jdk7
-  echo " done"
+  cp -r $JDK_DIR $CACHE_DIR/$JDK_DIR
+  echo " done."
 fi
 
 if [ -d "$CACHE_DIR/$VERTX_DIR" ]; then
   echo -n "copying vertx to app"
   cp -r "$CACHE_DIR/$VERTX_DIR" $BUILD_DIR
-  echo "done"
+  echo " done."
 fi
 
 VERTX_URL="http://dl.bintray.com/vertx/downloads/vert.x-2.1.2.tar.gz"
@@ -61,46 +65,59 @@ if [ ! -d "$BUILD_DIR/$VERTX_DIR" ]; then
   rm "$VERTX_DIR/bin/vertx.bat"
   cd $BUILD_DIR
   cp -r $VERTX_DIR $CACHE_DIR/$VERTX_DIR
-  echo " done"
+  echo " done."
 fi
 
 export PATH=$GROOVY_HOME/bin:$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
 
+getStagingAttribute() {
+  echo `groovy $BIN_DIR/vcap2.groovy $VCAP_APPLICATION $1`
+}
+
+createVertxModuleName() {
+  echo "$(getStagingAttribute space_name)~$(getStagingAttribute application_name)~1"
+}
+
+VERTX_MODULE=$(createVertxModuleName)
 
 
 cd $BUILD_DIR
-
-mkdir -p mods/foo~bar~1
+mkdir -p mods/f$VERTX_MODULE
 
 #mv app files into a mods/<package>~<appname>~1 dir. 
 #This is the trick that makes the vertx runmod cmd work.
-find . -maxdepth 1 ! -name "\.jdk7" ! -name "Procfile" ! -name "\.vertxdir" ! -name "\." ! -name "mods" -exec mv {} mods/foo~bar~1/ \;
-
+find . -maxdepth 1 ! -name "\.jdk" ! -name "Procfile" ! -name "\.vertxdir" ! -name "\." ! -name "mods" -exec mv {} mods/$VERTX_MODULE/ \;
 
 
 mkdir -p ${BUILD_DIR}/.profile.d
-echo "export JAVA_HOME=\"\$HOME/.jdk7\"" > ${BUILD_DIR}/.profile.d/javahome.sh
+echo "export JAVA_HOME=\"\$HOME/$JDK_DIR\"" > ${BUILD_DIR}/.profile.d/javahome.sh
 echo "export VERTX_HOME=\"\$HOME/$VERTX_DIR\"" > ${BUILD_DIR}/.profile.d/vertxhome.sh
-echo "export PATH=\"\$HOME/.jdk7/bin:\$HOME/$VERTX_DIR/bin:\$PATH\"" > ${BUILD_DIR}/.profile.d/path.sh
+echo "export PATH=\"\$HOME/$JDK_DIR/bin:\$HOME/$VERTX_DIR/bin:\$PATH\"" > ${BUILD_DIR}/.profile.d/path.sh
 
+
+#
+# DEBUG
+#
 echo "debug javahome"
 echo `cat ${BUILD_DIR}/.profile.d/javahome.sh`
 echo "debug vertxhome"
 echo `cat ${BUILD_DIR}/.profile.d/vertxhome.sh`
 echo "debug path.sh"
 echo `cat ${BUILD_DIR}/.profile.d/path.sh`
-
-
 echo "Path is set to"
 echo $PATH
 echo "DEBUG : "
 find . -maxdepth 4 > q && echo `cat q`
 echo "VCAP = $VCAP_APPLICATION"
+echo "BIN_DIR = $BIN_DIR"
+echo `ls -lt $BIN_DIR`
 echo `groovy $BIN_DIR/vcap.groovy application_name`
+echo "Trying second script..."
+echo `groovy $BIN_DIR/vcap2.groovy $VCAP_APPLICATION application_name`
 
 
 # Warn if no Procfile is present
 if [ ! -f Procfile ]; then
   echo "-----> No Procfile found. Will use the following default process: "
-  echo "       vertx runmod foo~bar~1"
+  echo "       vertx runmod $VERTX_MODULE"
 fi
