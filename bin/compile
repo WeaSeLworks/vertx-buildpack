@@ -71,6 +71,7 @@ if [ ! -d "$BUILD_DIR/$VERTX_DIR" ]; then
 fi
 
 export PATH=$GROOVY_HOME/bin:$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
+echo "PATH=$PATH"
 
 getStagingAttribute() {
   echo `groovy $BIN_DIR/vcap2.groovy $VCAP_APPLICATION $1`
@@ -81,10 +82,14 @@ createVertxModuleName() {
 }
 
 VERTX_MODULE=$(createVertxModuleName)
+echo "VERTX_MODULE=$VERTX_MODULE"
+VERTX_MODULE="raspberryPi~happiness115~1"
 
 
 cd $BUILD_DIR
 mkdir -p mods/f$VERTX_MODULE
+find . -maxdepth 1 > qq
+echo `cat qq`
 
 #mv app files into a mods/<package>~<appname>~1 dir. 
 #This is the trick that makes the vertx runmod cmd work.
