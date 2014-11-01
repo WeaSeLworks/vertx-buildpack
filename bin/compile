@@ -17,7 +17,7 @@ GROOVY_DIR=.groovy
 mkdir -p $BUILD_DIR/$LOG_DIR
 
 log() {
-  echo $1 >> $LOG_DIR/vertxbuildpack.log
+  echo $1 >> $BUILD_DIR/$LOG_DIR/vertxbuildpack.log
 }
 
 #create the cache dir if it doesn't exist
