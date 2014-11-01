@@ -76,7 +76,7 @@ export PATH=$GROOVY_HOME/bin:$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
 echo "PATH=$PATH"
 
 getStagingAttribute() {
-  echo `groovy $BIN_DIR/vcap2.groovy $VCAP_APPLICATION $1`
+  echo `groovy $BIN_DIR/vcap.groovy $1`
 }
 
 createVertxModuleName() {
@@ -85,13 +85,10 @@ createVertxModuleName() {
 
 VERTX_MODULE=$(createVertxModuleName)
 echo "VERTX_MODULE=$VERTX_MODULE"
-VERTX_MODULE="raspberryPi~happiness115~1"
 
 
 cd $BUILD_DIR
-mkdir -p mods/f$VERTX_MODULE
-find . -maxdepth 1 > qq
-echo `cat qq`
+mkdir -p mods/$VERTX_MODULE
 
 #mv app files into a mods/<package>~<appname>~1 dir. 
 #This is the trick that makes the vertx runmod cmd work.
@@ -132,4 +129,8 @@ echo `groovy $BIN_DIR/vcap2.groovy $VCAP_APPLICATION application_name`
 if [ ! -f Procfile ]; then
   echo "-----> No Procfile found. Will use the following default process: "
   echo "       vertx runmod $VERTX_MODULE"
+fi
+
+if [ -f Procfile ]; then
+  echo "Procfile found."
 fi
