@@ -82,7 +82,7 @@ export PATH=$GROOVY_HOME/bin:$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
 log "PATH=$PATH"
 
 getStagingAttribute() {
-  log `groovy $BIN_DIR/vcap.groovy $VCAP_APPLICATION $1`
+  log `groovy $BIN_DIR/json.groovy $VCAP_APPLICATION $1`
 }
 
 createVertxModuleName() {
@@ -126,7 +126,7 @@ find . -maxdepth 4 > q && log `cat q`
 log "VCAP = $VCAP_APPLICATION"
 log "BIN_DIR = $BIN_DIR"
 log `ls -lt $BIN_DIR`
-log `groovy $BIN_DIR/vcap.groovy application_name`
+log `groovy $BIN_DIR/json.groovy application_name`
 
 
 
