@@ -29,52 +29,52 @@ log "Vertx Buildpack Compile Phase"
 GROOVY_URL="http://dl.bintray.com/groovy/maven/groovy-binary-2.3.7.zip"
 
 if [ ! -d "$CACHE_DIR/$GROOVY_DIR" ]; then
-  log -n "-----> Installing Groovy shell for json slurping (to $GROOVY_DIR)....."
+  echo "-----> Installing Groovy shell for json slurping (to $GROOVY_DIR)....."
   mkdir -p "$CACHE_DIR/$GROOVY_DIR"
   cd "$CACHE_DIR/$GROOVY_DIR"
   curl --max-time 180 --location $GROOVY_URL > groovybin.zip
   unzip groovybin.zip
   
-  log " done."
+  echo " done."
 fi
 
 cd $BUILD_DIR
 if [ -d "$CACHE_DIR/$JDK_DIR" ]; then
-  log -n "copying jdk to app....."
+  echo "copying jdk to app....."
   cp -r "$CACHE_DIR/$JDK_DIR" $BUILD_DIR
-  log " done."
+  echo " done."
 fi
 
 #TODO upgrade this to JDK8
 OPENJDK7_URL="https://s3.amazonaws.com/heroku-jvm-langpack-java/openjdk7-u2-heroku-temaki.tar.gz"
 
 if [ ! -d "$BUILD_DIR/$JDK_DIR" ]; then
-  log -n "-----> Installing OpenJDK7u2 build (to $JDK_DIR)....."
+  echo "-----> Installing OpenJDK7u2 build (to $JDK_DIR)....."
   mkdir "$BUILD_DIR/$JDK_DIR"
   cd "$BUILD_DIR/$JDK_DIR"
   curl --max-time 180 --location $OPENJDK7_URL | tar xz
   cd $BUILD_DIR
   cp -r $JDK_DIR $CACHE_DIR/$JDK_DIR
-  log " done."
+  echo " done."
 fi
 
 if [ -d "$CACHE_DIR/$VERTX_DIR" ]; then
-  log -n "copying vertx to app"
+  echo "copying vertx to app"
   cp -r "$CACHE_DIR/$VERTX_DIR" $BUILD_DIR
-  log " done."
+  echo " done."
 fi
 
 VERTX_URL="http://dl.bintray.com/vertx/downloads/vert.x-2.1.2.tar.gz"
 
 
 if [ ! -d "$BUILD_DIR/$VERTX_DIR" ]; then
-  log -n "-----> Installing Vert.x build (to $VERTX_DIR)....."
+  echo "-----> Installing Vert.x build (to $VERTX_DIR)....."
   curl --max-time 320 --location $VERTX_URL | tar xz
   mv vert* $VERTX_DIR
   rm "$VERTX_DIR/bin/vertx.bat"
   cd $BUILD_DIR
   cp -r $VERTX_DIR $CACHE_DIR/$VERTX_DIR
-  log " done."
+  echo " done."
 fi
 
 export GROOVY_HOME=$CACHE_DIR/$GROOVY_DIR/groovy-2.3.7
