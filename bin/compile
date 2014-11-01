@@ -27,7 +27,7 @@ if [ ! -d "$CACHE_DIR/$GROOVY_DIR" ]; then
   cd "$CACHE_DIR/$GROOVY_DIR"
   curl --max-time 180 --location $GROOVY_URL > groovybin.zip
   unzip groovybin.zip
-  export GROOVY_HOME=$CACHE_DIR/$GROOVY_DIR/groovy-2.3.7
+  
   echo " done."
 fi
 
@@ -70,6 +70,8 @@ if [ ! -d "$BUILD_DIR/$VERTX_DIR" ]; then
   echo " done."
 fi
 
+export GROOVY_HOME=$CACHE_DIR/$GROOVY_DIR/groovy-2.3.7
+export JAVA_HOME=$BUILD_DIR/$JDK_DIR
 export PATH=$GROOVY_HOME/bin:$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
 echo "PATH=$PATH"
 
