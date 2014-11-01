@@ -2,6 +2,7 @@
 # bin/release <build-dir>
 
 BUILD_DIR=$1
+MODULE_DIR=$(cd $BUILD_DIR/mods/; ls)
 
 cat <<EOF
 ---
@@ -13,7 +14,7 @@ EOF
 if [ ! -f $BUILD_DIR/Procfile ]; then
 cat <<EOF
 default_process_types:
-  web: vertx runmod foo~bar~1
+  web: vertx runmod $MODULE_DIR
 EOF
 fi
 
