@@ -4,87 +4,93 @@
 # fail fast
 set -e
 
+
 BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 # parse args
 BUILD_DIR=$1
 CACHE_DIR=$2
-
-#
+LOG_DIR=.log
 VERTX_DIR=.vertxdir
 JDK_DIR=.jdk
 GROOVY_DIR=.groovy
 
+mkdir -p $BUILD_DIR/$LOG_DIR
+
+log() {
+  echo $1 >> $LOG_DIR/vertxbuildpack.log
+}
+
 #create the cache dir if it doesn't exist
 mkdir -p $CACHE_DIR
 
-echo "Vertx Buildpack Compile Phase"
+log "Vertx Buildpack Compile Phase"
 
 GROOVY_URL="http://dl.bintray.com/groovy/maven/groovy-binary-2.3.7.zip"
 
 if [ ! -d "$CACHE_DIR/$GROOVY_DIR" ]; then
-  echo -n "-----> Installing Groovy shell for json slurping (to $GROOVY_DIR)....."
+  log -n "-----> Installing Groovy shell for json slurping (to $GROOVY_DIR)....."
   mkdir -p "$CACHE_DIR/$GROOVY_DIR"
   cd "$CACHE_DIR/$GROOVY_DIR"
   curl --max-time 180 --location $GROOVY_URL > groovybin.zip
   unzip groovybin.zip
   
-  echo " done."
+  log " done."
 fi
 
 cd $BUILD_DIR
 if [ -d "$CACHE_DIR/$JDK_DIR" ]; then
-  echo -n "copying jdk to app....."
+  log -n "copying jdk to app....."
   cp -r "$CACHE_DIR/$JDK_DIR" $BUILD_DIR
-  echo " done."
+  log " done."
 fi
 
 #TODO upgrade this to JDK8
 OPENJDK7_URL="https://s3.amazonaws.com/heroku-jvm-langpack-java/openjdk7-u2-heroku-temaki.tar.gz"
 
 if [ ! -d "$BUILD_DIR/$JDK_DIR" ]; then
-  echo -n "-----> Installing OpenJDK7u2 build (to $JDK_DIR)....."
+  log -n "-----> Installing OpenJDK7u2 build (to $JDK_DIR)....."
   mkdir "$BUILD_DIR/$JDK_DIR"
   cd "$BUILD_DIR/$JDK_DIR"
   curl --max-time 180 --location $OPENJDK7_URL | tar xz
   cd $BUILD_DIR
   cp -r $JDK_DIR $CACHE_DIR/$JDK_DIR
-  echo " done."
+  log " done."
 fi
 
 if [ -d "$CACHE_DIR/$VERTX_DIR" ]; then
-  echo -n "copying vertx to app"
+  log -n "copying vertx to app"
   cp -r "$CACHE_DIR/$VERTX_DIR" $BUILD_DIR
-  echo " done."
+  log " done."
 fi
 
 VERTX_URL="http://dl.bintray.com/vertx/downloads/vert.x-2.1.2.tar.gz"
 
 
 if [ ! -d "$BUILD_DIR/$VERTX_DIR" ]; then
-  echo -n "-----> Installing Vert.x build (to $VERTX_DIR)....."
+  log -n "-----> Installing Vert.x build (to $VERTX_DIR)....."
   curl --max-time 320 --location $VERTX_URL | tar xz
   mv vert* $VERTX_DIR
   rm "$VERTX_DIR/bin/vertx.bat"
   cd $BUILD_DIR
   cp -r $VERTX_DIR $CACHE_DIR/$VERTX_DIR
-  echo " done."
+  log " done."
 fi
 
 export GROOVY_HOME=$CACHE_DIR/$GROOVY_DIR/groovy-2.3.7
 export JAVA_HOME=$BUILD_DIR/$JDK_DIR
 export PATH=$GROOVY_HOME/bin:$PATH:$JAVA_HOME/bin:$VERTX_HOME/bin
-echo "PATH=$PATH"
+log "PATH=$PATH"
 
 getStagingAttribute() {
-  echo `groovy $BIN_DIR/vcap.groovy $1`
+  log `groovy $BIN_DIR/vcap.groovy $VCAP_APPLICATION $1`
 }
 
 createVertxModuleName() {
-  echo "$(getStagingAttribute space_name)~$(getStagingAttribute application_name)~1"
+  log "$(getStagingAttribute space_name)~$(getStagingAttribute application_name)~1"
 }
 
 VERTX_MODULE=$(createVertxModuleName)
-echo "VERTX_MODULE=$VERTX_MODULE"
+log "VERTX_MODULE=$VERTX_MODULE"
 
 
 cd $BUILD_DIR
@@ -99,38 +105,37 @@ find . -maxdepth 1 ! -name "\.jdk" ! -name "Procfile" ! -name "\.vertxdir" ! -na
 #scripts are executed and the env vars such $HOME etc which only exist at 
 #runtime will be appropriately replaced.
 mkdir -p ${BUILD_DIR}/.profile.d
-echo "export JAVA_HOME=\"\$HOME/$JDK_DIR\"" > ${BUILD_DIR}/.profile.d/javahome.sh
-echo "export VERTX_HOME=\"\$HOME/$VERTX_DIR\"" > ${BUILD_DIR}/.profile.d/vertxhome.sh
-echo "export PATH=\"\$HOME/$JDK_DIR/bin:\$HOME/$VERTX_DIR/bin:\$PATH\"" > ${BUILD_DIR}/.profile.d/path.sh
+log "export JAVA_HOME=\"\$HOME/$JDK_DIR\"" > ${BUILD_DIR}/.profile.d/javahome.sh
+log "export VERTX_HOME=\"\$HOME/$VERTX_DIR\"" > ${BUILD_DIR}/.profile.d/vertxhome.sh
+log "export PATH=\"\$HOME/$JDK_DIR/bin:\$HOME/$VERTX_DIR/bin:\$PATH\"" > ${BUILD_DIR}/.profile.d/path.sh
 
 
 #
 # DEBUG
 #
-echo "debug javahome"
-echo `cat ${BUILD_DIR}/.profile.d/javahome.sh`
-echo "debug vertxhome"
-echo `cat ${BUILD_DIR}/.profile.d/vertxhome.sh`
-echo "debug path.sh"
-echo `cat ${BUILD_DIR}/.profile.d/path.sh`
-echo "Path is set to"
-echo $PATH
-echo "DEBUG : "
-find . -maxdepth 4 > q && echo `cat q`
-echo "VCAP = $VCAP_APPLICATION"
-echo "BIN_DIR = $BIN_DIR"
-echo `ls -lt $BIN_DIR`
-echo `groovy $BIN_DIR/vcap.groovy application_name`
-echo "Trying second script..."
-echo `groovy $BIN_DIR/vcap2.groovy $VCAP_APPLICATION application_name`
+log "debug javahome"
+log `cat ${BUILD_DIR}/.profile.d/javahome.sh`
+log "debug vertxhome"
+log `cat ${BUILD_DIR}/.profile.d/vertxhome.sh`
+log "debug path.sh"
+log `cat ${BUILD_DIR}/.profile.d/path.sh`
+log "Path is set to"
+log $PATH
+log "DEBUG : "
+find . -maxdepth 4 > q && log `cat q`
+log "VCAP = $VCAP_APPLICATION"
+log "BIN_DIR = $BIN_DIR"
+log `ls -lt $BIN_DIR`
+log `groovy $BIN_DIR/vcap.groovy application_name`
+
 
 
 # Warn if no Procfile is present
 if [ ! -f Procfile ]; then
-  echo "-----> No Procfile found. Will use the following default process: "
-  echo "       vertx runmod $VERTX_MODULE"
+  log "-----> No Procfile found. Will use the following default process: "
+  log "       vertx runmod $VERTX_MODULE"
 fi
 
 if [ -f Procfile ]; then
-  echo "Procfile found."
+  log "Procfile found."
 fi
