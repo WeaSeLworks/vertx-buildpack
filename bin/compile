@@ -18,6 +18,7 @@ mkdir -p $BUILD_DIR/$LOG_DIR
 
 log() {
   echo $1 >> $BUILD_DIR/$LOG_DIR/vertxbuildpack.log
+  echo $1
 }
 
 #create the cache dir if it doesn't exist
@@ -132,10 +133,10 @@ log `groovy $BIN_DIR/json.groovy application_name`
 
 # Warn if no Procfile is present
 if [ ! -f Procfile ]; then
-  log "-----> No Procfile found. Will use the following default process: "
-  log "       vertx runmod $VERTX_MODULE"
+  echo "-----> No Procfile found. Will use the following default process: "
+  echo "       vertx runmod $VERTX_MODULE"
 fi
 
 if [ -f Procfile ]; then
-  log "Procfile found."
+  echo "Procfile found."
 fi
