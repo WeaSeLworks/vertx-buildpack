@@ -9,12 +9,13 @@ BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 # parse args
 BUILD_DIR=$1
 CACHE_DIR=$2
-LOG_DIR=.log
+LOG_DIR=.vblog
 VERTX_DIR=.vertxdir
 JDK_DIR=.jdk
 GROOVY_DIR=.groovy
 
 mkdir -p $BUILD_DIR/$LOG_DIR
+touch $BUILD_DIR/$LOG_DIR/vertxbuildpack.log
 
 log() {
   echo $1 >> $BUILD_DIR/$LOG_DIR/vertxbuildpack.log
@@ -99,16 +100,16 @@ mkdir -p mods/$VERTX_MODULE
 
 #mv app files into a mods/<package>~<appname>~1 dir. 
 #This is the trick that makes the vertx runmod cmd work.
-find . -maxdepth 1 ! -name "\.jdk" ! -name "Procfile" ! -name "\.vertxdir" ! -name "\." ! -name "mods" -exec mv {} mods/$VERTX_MODULE/ \;
+find . -maxdepth 1 ! -name "\.jdk" ! -name "Procfile" ! -name "\.vertxdir" ! -name "\." ! -name "mods" ! -name "\.vblog" -exec mv {} mods/$VERTX_MODULE/ \;
 
 
 #The magic undocumented .profile.d dir!
 #scripts are executed and the env vars such $HOME etc which only exist at 
 #runtime will be appropriately replaced.
 mkdir -p ${BUILD_DIR}/.profile.d
-log "export JAVA_HOME=\"\$HOME/$JDK_DIR\"" > ${BUILD_DIR}/.profile.d/javahome.sh
-log "export VERTX_HOME=\"\$HOME/$VERTX_DIR\"" > ${BUILD_DIR}/.profile.d/vertxhome.sh
-log "export PATH=\"\$HOME/$JDK_DIR/bin:\$HOME/$VERTX_DIR/bin:\$PATH\"" > ${BUILD_DIR}/.profile.d/path.sh
+echo "export JAVA_HOME=\"\$HOME/$JDK_DIR\"" > ${BUILD_DIR}/.profile.d/javahome.sh
+echo "export VERTX_HOME=\"\$HOME/$VERTX_DIR\"" > ${BUILD_DIR}/.profile.d/vertxhome.sh
+echo "export PATH=\"\$HOME/$JDK_DIR/bin:\$HOME/$VERTX_DIR/bin:\$PATH\"" > ${BUILD_DIR}/.profile.d/path.sh
 
 
 #
