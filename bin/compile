@@ -6,7 +6,6 @@ set -e
 
 
 BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
-# parse args
 BUILD_DIR=$1
 CACHE_DIR=$2
 LOG_DIR=.vblog
@@ -110,26 +109,6 @@ mkdir -p ${BUILD_DIR}/.profile.d
 echo "export JAVA_HOME=\"\$HOME/$JDK_DIR\"" > ${BUILD_DIR}/.profile.d/javahome.sh
 echo "export VERTX_HOME=\"\$HOME/$VERTX_DIR\"" > ${BUILD_DIR}/.profile.d/vertxhome.sh
 echo "export PATH=\"\$HOME/$JDK_DIR/bin:\$HOME/$VERTX_DIR/bin:\$PATH\"" > ${BUILD_DIR}/.profile.d/path.sh
-
-
-#
-# DEBUG
-#
-log "debug javahome"
-log `cat ${BUILD_DIR}/.profile.d/javahome.sh`
-log "debug vertxhome"
-log `cat ${BUILD_DIR}/.profile.d/vertxhome.sh`
-log "debug path.sh"
-log `cat ${BUILD_DIR}/.profile.d/path.sh`
-log "Path is set to"
-log $PATH
-log "DEBUG : "
-find . -maxdepth 4 > q && log `cat q`
-log "VCAP = $VCAP_APPLICATION"
-log "BIN_DIR = $BIN_DIR"
-log `ls -lt $BIN_DIR`
-log `groovy $BIN_DIR/json.groovy application_name`
-
 
 
 # Warn if no Procfile is present
